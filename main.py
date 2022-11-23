@@ -1,6 +1,7 @@
 import pygame
 import AI.AI as AI
 import interpreter
+import numpy as np
 from tetris import *
 
 # Initialize the game engine
@@ -21,7 +22,7 @@ done = False
 clock = pygame.time.Clock()
 fps = 4
 game = Tetris(20, 10)
-model_RL = AI.Model_RL(20*10,4)
+model_RL = AI.Model_RL(game.width * game.height,4)
 counter = 0
 
 pressing_down = False
@@ -37,7 +38,7 @@ while not done:
             game.go_down()
 
     # Make decision by model:
-    model_result, action = model_RL.move(game.field)
+    model_result, action = model_RL.move(game.get_field_with_figure())
     correct_move_flag = 1
     if action == 1:
         correct_move_flag = game.rotate()

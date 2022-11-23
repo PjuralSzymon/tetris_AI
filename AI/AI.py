@@ -14,6 +14,8 @@ class Model_RL:
     def create_input(self, politics):
         input = np.array(politics).flatten()
         input = input.reshape((self.politic_size, 1))
+        for i in range(0,len(input)):
+            if input[i] > 0: input[i] = 1.0
         return input
 
     def move(self, politics):
