@@ -118,16 +118,22 @@ class Tetris:
             self.state = "gameover"
 
     def go_side(self, dx):
+        correct_move = 1
         old_x = self.figure.x
         self.figure.x += dx
         if self.intersects():
             self.figure.x = old_x
+            correct_move = 0
+        return correct_move
 
     def rotate(self):
+        correct_move = 1
         old_rotation = self.figure.rotation
         self.figure.rotate()
         if self.intersects():
             self.figure.rotation = old_rotation
+            correct_move = 0
+        return correct_move
 
 # for player laying:
     # for event in pygame.event.get():

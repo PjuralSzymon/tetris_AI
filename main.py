@@ -1,5 +1,6 @@
 import pygame
-import AI
+import AI.AI as AI
+import interpreter
 from tetris import *
 
 # Initialize the game engine
@@ -18,12 +19,12 @@ pygame.display.set_caption("Tetris")
 # Loop until the user clicks the close button.
 done = False
 clock = pygame.time.Clock()
-fps = 25
+fps = 4
 game = Tetris(20, 10)
+model_RL = AI.Model_RL(20*10,4)
 counter = 0
 
 pressing_down = False
-
 while not done:
     if game.figure is None:
         game.new_figure()
@@ -35,15 +36,19 @@ while not done:
         if game.state == "start":
             game.go_down()
 
-    probabilities, action = AI.move(game.field)
-    print(action)
-
+    # Make decision by model:
+    model_result, action = model_RL.move(game.field)
+    correct_move_flag = 1
     if action == 1:
-        game.rotate()
+        correct_move_flag = game.rotate()
     elif action == 2:
-        game.go_side(-1)
+        correct_move_flag = game.go_side(-1)
     elif action == 3:
-        game.go_side(1)
+        correct_move_flag = game.go_side(1)
+    
+    # grade made changes
+    grade = interpreter.evaluate(game, model_result, correct_move_flag)
+    model_RL.grade(game.field, grade)
 
     screen.fill(WHITE)
     
