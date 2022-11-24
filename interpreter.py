@@ -27,16 +27,17 @@ def evaluate(game, old_figure, model_result, wrong_move_flag=1):
             heights[i] = -1
         game_copy.go_down()
         field = game_copy.get_field_with_figure()
-        j = 0
-        while True:
-            if all(np.array(field[j]) == 0):
-                j += 1
-            else:
-                break
-        heights[i] = j
+        heights_of_tower = [0]*len(field[0])
+        for k in range(len(field[0])):
+            for j in range(len(field)):
+                if field[j][k] == 0:
+                    heights_of_tower[k] += 1
+        heights[i] = sum(heights_of_tower)
     best_action = np.argmax(heights)
     if best_action != action and heights[best_action] != heights[action]:
         rank = ss.rankdata(heights)
-        result = result + rank
+        result[0] = result[0] + rank
         result = result/np.linalg.norm(result)
+    else:
+        result[0][action] += 1
     return result

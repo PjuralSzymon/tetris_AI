@@ -38,7 +38,6 @@ while not done:
 
     # Make decision by model:
     model_result, action = model_RL.move(game.get_field_with_figure())
-    print(game.get_field_with_figure())
     correct_move_flag = 1
     old_figure = copy.deepcopy(game.figure)
     if action == 1:
