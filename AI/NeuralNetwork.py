@@ -1,4 +1,5 @@
 import numpy as np
+import random
 #from helpers import *
 
 class Activations:
@@ -13,6 +14,7 @@ class Activations:
             return exp / exp.sum(axis=0)
         def der(X):
             return 1
+
 
 class Layer:
     def __init__(self,input_size, neurons, act_fun):
@@ -34,10 +36,17 @@ class Layer:
         self.dB = 1 / m * np.sum(dZ, 1)
         E = self.W.T.dot(dZ)
         return E, m
-
     def update_params(self, alpha):
         self.W = self.W - alpha * self.dW
-        self.B = self.B - alpha * np.reshape(self.dB, (self.neurons,1))
+        self.B = self.B - alpha * np.array([self.dB]).T
+        self.W = Layer.clean_nan(self.W)
+        self.B = Layer.clean_nan(self.B)
+
+    def clean_nan(x):
+        x[x== np.inf] = np.nan
+        x[x==-np.inf] = np.nan
+        x = np.nan_to_num(x, random.uniform(-0.1, 0.1))
+        return x
 
 class Model:
     def __init__(self):
@@ -58,14 +67,22 @@ class Model:
     def get_accuracy(predictions, Y):
         return np.sum(predictions == Y) / Y.size
 
-    def train(self, X, Y, alpha):
-        A = self.predict_single(X)
-        E = A - Y
-        m = Y.size
+    def train(self, X, E, alpha):
+        self.predict_single(X)
+        m = E.size
         for layer in reversed(self.Layers):
             E, _ = layer.back_prop(E,m)
         for layer in self.Layers:
             layer.update_params(alpha)
+
+    # def train2(self, X, Y, alpha):
+    #     A = self.predict_single(X)
+    #     E = A - Y
+    #     m = Y.size
+    #     for layer in reversed(self.Layers):
+    #         E, _ = layer.back_prop(E,m)
+    #     for layer in self.Layers:
+    #         layer.update_params(alpha)
 
 
 # data = pd.read_csv('C:\\Uczymy sie\\_Magisterka\\NeuralNetworks\\dataset\\train.csv')

@@ -49,6 +49,7 @@ while not done:
     
     # grade made changes
     grade = interpreter.evaluate(game, old_figure, model_result, correct_move_flag)
+    print("model: "+ str(model_result)+ " grade: "+ str(grade))
     model_RL.grade(game.field, grade)
 
     screen.fill(WHITE)
