@@ -67,22 +67,22 @@ class Model:
     def get_accuracy(predictions, Y):
         return np.sum(predictions == Y) / Y.size
 
-    def train(self, X, E, alpha):
-        self.predict_single(X)
-        m = E.size
-        for layer in reversed(self.Layers):
-            E, _ = layer.back_prop(E,m)
-        for layer in self.Layers:
-            layer.update_params(alpha)
-
-    # def train2(self, X, Y, alpha):
-    #     A = self.predict_single(X)
-    #     E = A - Y
-    #     m = Y.size
+    # def train(self, X, E, alpha):
+    #     self.predict_single(X)
+    #     m = E.size
     #     for layer in reversed(self.Layers):
     #         E, _ = layer.back_prop(E,m)
     #     for layer in self.Layers:
     #         layer.update_params(alpha)
+
+    def train(self, X, Y, alpha):
+        A = self.predict_single(X)
+        E = A - Y
+        m = Y.size
+        for layer in reversed(self.Layers):
+            E, _ = layer.back_prop(E,m)
+        for layer in self.Layers:
+            layer.update_params(alpha)
 
 
 # data = pd.read_csv('C:\\Uczymy sie\\_Magisterka\\NeuralNetworks\\dataset\\train.csv')

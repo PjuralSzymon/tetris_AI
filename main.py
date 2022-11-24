@@ -1,6 +1,7 @@
 import pygame
 import AI.AI as AI
 import interpreter
+import sys
 from tetris import *
 
 # Initialize the game engine
@@ -32,6 +33,10 @@ while not done:
     if counter > 100000:
         counter = 0
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit(0)
+
     if counter % (fps // game.level // 2) == 0 or pressing_down:
         if game.state == "start":
             game.go_down()
@@ -49,7 +54,6 @@ while not done:
     
     # grade made changes
     grade = interpreter.evaluate(game, old_figure, model_result, correct_move_flag)
-    print("model: "+ str(model_result)+ " grade: "+ str(grade))
     model_RL.grade(game.field, grade)
 
     screen.fill(WHITE)
@@ -84,6 +88,6 @@ while not done:
         # screen.blit(text_game_over1, [25, 265])
 
     pygame.display.flip()
-    clock.tick(fps)
+    #clock.tick(fps)
 
 pygame.quit()
