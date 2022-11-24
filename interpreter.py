@@ -8,9 +8,8 @@ def evaluate(game, old_figure, model_result, wrong_move_flag=1):
     result = model_result
     # is not correct
     if wrong_move_flag != 1:
-        result[0][action] *= -1
+        result[0][action] = 0
         return result
-
     # is correct
     heights = [None]*4
     for i in range(len(result[0])):
@@ -33,11 +32,15 @@ def evaluate(game, old_figure, model_result, wrong_move_flag=1):
                 if field[j][k] == 0:
                     heights_of_tower[k] += 1
         heights[i] = sum(heights_of_tower)
-    best_action = np.argmax(heights)
-    if best_action != action and heights[best_action] != heights[action]:
+    if heights[np.argmax(heights)] != heights[action]:
         rank = ss.rankdata(heights)
         result[0] = result[0] + rank
         result = result/np.linalg.norm(result)
     else:
-        result[0][action] += 1
+        result[0][action] *= 1.1
+        if result[0][action] > 1:
+            result[0][action] = 1
+    print(model_result)
+    print(result)
+    print('______________________')
     return result
