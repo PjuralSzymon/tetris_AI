@@ -144,6 +144,8 @@ class Tetris:
             correct_move = 0
         return correct_move
 
+    def reset(self):
+        self.__init__(self.height, self.width)
 # for player laying:
     # for event in pygame.event.get():
     #     if event.type == pygame.QUIT:

@@ -1,7 +1,6 @@
 import pygame
 import AI.AI as AI
 import interpreter
-import numpy as np
 from tetris import *
 
 # Initialize the game engine
@@ -22,7 +21,7 @@ done = False
 clock = pygame.time.Clock()
 fps = 4
 game = Tetris(20, 10)
-model_RL = AI.Model_RL(game.width * game.height,4)
+model_RL = AI.Model_RL(game.width * game.height, 4)
 counter = 0
 
 pressing_down = False
@@ -39,7 +38,9 @@ while not done:
 
     # Make decision by model:
     model_result, action = model_RL.move(game.get_field_with_figure())
+    print(game.get_field_with_figure())
     correct_move_flag = 1
+    old_figure = copy.deepcopy(game.figure)
     if action == 1:
         correct_move_flag = game.rotate()
     elif action == 2:
@@ -48,7 +49,7 @@ while not done:
         correct_move_flag = game.go_side(1)
     
     # grade made changes
-    grade = interpreter.evaluate(game, model_result, correct_move_flag)
+    grade = interpreter.evaluate(game, old_figure, model_result, correct_move_flag)
     model_RL.grade(game.field, grade)
 
     screen.fill(WHITE)
@@ -74,12 +75,13 @@ while not done:
     font1 = pygame.font.SysFont('Calibri', 65, True, False)
     text = font.render("Score: " + str(game.score), True, BLACK)
     text_game_over = font1.render("Game Over", True, (255, 125, 0))
-    text_game_over1 = font1.render("Press ESC", True, (255, 215, 0))
+    # text_game_over1 = font1.render("Press ESC", True, (255, 215, 0))
 
     screen.blit(text, [0, 0])
     if game.state == "gameover":
         screen.blit(text_game_over, [20, 200])
-        screen.blit(text_game_over1, [25, 265])
+        game.reset()
+        # screen.blit(text_game_over1, [25, 265])
 
     pygame.display.flip()
     clock.tick(fps)
