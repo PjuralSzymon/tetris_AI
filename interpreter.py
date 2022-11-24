@@ -40,7 +40,7 @@ def evaluate(game, old_figure, model_result, wrong_move_flag=1):
         result[0][action] *= 1.1
         if result[0][action] > 1:
             result[0][action] = 1
-    print(model_result)
-    print(result)
-    print('______________________')
+    #print(model_result)
+    #print(result)
+    #print('______________________')
     return result
