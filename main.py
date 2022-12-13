@@ -1,4 +1,5 @@
 import pygame
+import numpy as np
 import AI.AI as AI
 import interpreter
 import sys
@@ -22,7 +23,7 @@ done = False
 clock = pygame.time.Clock()
 fps = 4
 game = Tetris(20, 10)
-model_RL = AI.Model_RL(game.width * game.height, 4)
+model_RL = AI.Model_RL(game.width * game.height, 3)
 counter = 0
 
 pressing_down = False
@@ -42,20 +43,23 @@ while not done:
             game.go_down()
 
     # Make decision by model:
-    model_result, action = model_RL.move(game.get_field_with_figure())
+    figure_save = game.get_field_with_figure()
+    model_result, action = model_RL.move(figure_save)
     correct_move_flag = 1
-    old_figure = copy.deepcopy(game.figure)
-    if action == 1:
-        correct_move_flag = game.rotate()
-    elif action == 2:
-        correct_move_flag = game.go_side(-1)
-    elif action == 3:
+    
+    if action == 0:
         correct_move_flag = game.go_side(1)
+    elif action == 1:
+        correct_move_flag = game.go_side(-1)
+    elif action == 2:
+        correct_move_flag = game.rotate()
     
     # grade made changes
-    grade = interpreter.evaluate(game, old_figure, model_result, correct_move_flag)
-    model_RL.grade(game.field, grade)
-
+    #print("action: "+ str(action))
+    grade, importance = interpreter.evaluate(game, figure_save, np.round(model_result,2), game.score, correct_move_flag)
+    model_RL.grade(game.field, grade, importance)
+    #print("model_result: "+ str(model_result) + " grade: "+ str(grade))
+    #input(" ? ")
     screen.fill(WHITE)
     
     for i in range(game.height):

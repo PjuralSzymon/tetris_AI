@@ -1,5 +1,6 @@
 import random
 import copy
+import numpy as np
 
 "kod do tetrisa z https://levelup.gitconnected.com/writing-tetris-in-python-2a16bddb5318"
 
@@ -124,7 +125,7 @@ class Tetris:
             for j in range(4):
                 if i * 4 + j in self.figure.image():
                     field_copy[i + self.figure.y][j + self.figure.x] = self.figure.color
-        return field_copy
+        return np.array(field_copy)
 
     def go_side(self, dx):
         correct_move = 1

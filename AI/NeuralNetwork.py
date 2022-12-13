@@ -2,18 +2,40 @@ import numpy as np
 import random
 #from helpers import *
 
+class Loss:
+    class MSE:
+        def exe(Y_true, Y_pred):
+            return np.mean(np.power(Y_true-Y_pred, 2))
+        def der(Y_true, Y_pred):
+            return np.array(2*(Y_pred-Y_true)/Y_true.size)
+    class MAE:
+        def exe(Y_true, Y_pred):
+            return np.mean(np.abs(Y_true-Y_pred))
+        def der(Y_true, Y_pred):
+            N = Y_true.shape[0]
+            return np.array(-((Y_true - Y_pred) / (abs(Y_true - Y_pred)))/N)
+
 class Activations:
     class ReLu:
         def exe(X):
             return np.maximum(X,0)
         def der(X):
             return X > 0
+    class Sigmoid:
+        def exe(X):
+            return 1/(1+np.exp(-X))
+        def der(X):
+            s = Activations.Sigmoid.exe(X)
+            return s * (1 - s)
     class SoftMax:
         def exe(X):
-            exp = np.exp(X - np.max(X))
-            return exp / exp.sum(axis=0)
+            X[X== np.inf] = np.nan
+            X[X==-np.inf] = np.nan
+            exp = np.exp(X - np.nanmax(X))
+            return np.nan_to_num(exp / exp.sum(axis=0), nan = np.nanmean(X))
         def der(X):
             return 1
+            
 
 
 class Layer:
@@ -30,17 +52,18 @@ class Layer:
         self.A = self.act_fun.exe(self.Z)
         return self.A
 
-    def back_prop(self,E,m):
-        dZ = E * self.act_fun.der(self.Z)
-        self.dW = 1 / m * dZ.dot(self.I.T)
-        self.dB = 1 / m * np.sum(dZ, 1)
-        E = self.W.T.dot(dZ)
-        return E, m
+    def back_prop(self,E):
+        dZ = self.act_fun.der(self.Z) * E
+        self.dW = np.dot(dZ, self.I.T)
+        self.dB = np.mean(dZ, axis=1)
+        E = np.dot(self.W.T, dZ)
+        return E
+
     def update_params(self, alpha):
         self.W = self.W - alpha * self.dW
         self.B = self.B - alpha * np.array([self.dB]).T
-        self.W = Layer.clean_nan(self.W)
-        self.B = Layer.clean_nan(self.B)
+        #self.W = Layer.clean_nan(self.W)
+        #self.B = Layer.clean_nan(self.B)
 
     def clean_nan(x):
         x[x== np.inf] = np.nan
@@ -75,14 +98,16 @@ class Model:
     #     for layer in self.Layers:
     #         layer.update_params(alpha)
 
-    def train(self, X, Y, alpha):
-        A = self.predict_single(X)
-        E = A - Y
-        m = Y.size
-        for layer in reversed(self.Layers):
-            E, _ = layer.back_prop(E,m)
-        for layer in self.Layers:
-            layer.update_params(alpha)
+    def train(self, X, Y, epochs, alpha):
+        for i in range(0, epochs):
+            A = self.predict_single(X)
+            E = Loss.MAE.der(Y, A)
+            loss = Loss.MAE.exe(Y, A)
+            for layer in reversed(self.Layers):
+                E = layer.back_prop(E)
+            for layer in self.Layers:
+                layer.update_params(alpha)
+        #print("loss, ", loss)
 
 
 # data = pd.read_csv('C:\\Uczymy sie\\_Magisterka\\NeuralNetworks\\dataset\\train.csv')

@@ -4,13 +4,17 @@ import AI.NeuralNetwork as NN
 
 class Model_RL:
     def __init__(self, politic_size, actions):
-        hidden_layer_size = int((politic_size + actions)/10)
+        hidden_layer_size = int((politic_size + actions)/2)
         self.politic_size = politic_size
         self.actions = actions
         self.M = NN.Model()
-        self.M.add_layer(NN.Layer(politic_size, hidden_layer_size, NN.Activations.ReLu))
-        self.M.add_layer(NN.Layer(hidden_layer_size, hidden_layer_size, NN.Activations.ReLu))
+        self.M.add_layer(NN.Layer(politic_size, politic_size, NN.Activations.Sigmoid))
+        self.M.add_layer(NN.Layer(politic_size, hidden_layer_size, NN.Activations.Sigmoid))
+        self.M.add_layer(NN.Layer(hidden_layer_size, hidden_layer_size, NN.Activations.Sigmoid))
+        self.M.add_layer(NN.Layer(hidden_layer_size, hidden_layer_size, NN.Activations.Sigmoid))
+        self.M.add_layer(NN.Layer(hidden_layer_size, hidden_layer_size, NN.Activations.Sigmoid))
         self.M.add_layer(NN.Layer(hidden_layer_size, actions, NN.Activations.SoftMax))
+
 
     def create_input(self, politics):
         input = np.array(politics).flatten()
@@ -26,6 +30,6 @@ class Model_RL:
         model_result = model_result.transpose()
         return model_result, np.argmax(model_result)
 
-    def grade(self, politics, grade):
+    def grade(self, politics, grade, importance = 1):
         input = self.create_input(politics)
-        self.M.train(input, grade.transpose(), 0.1)
+        self.M.train(input, grade.transpose(), importance, 0.1)
