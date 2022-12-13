@@ -3,7 +3,7 @@ import numpy as np
 import scipy.stats as ss
 
 def evaluate(game, old_figure, model_result, game_score, wrong_move_flag=1):
-    noise = 0.2
+    noise = 0.4
     #max_penalty = -1.0
     #max_award = 1.0
     importance = 1
@@ -43,6 +43,19 @@ def evaluate(game, old_figure, model_result, game_score, wrong_move_flag=1):
     #print("final: ", result)
     return result, importance
 
+def end_state_grade(game):
+    row_dens_w = 0.2
+    score_w = 2.0
+    reward = 0.0
+    row_states = get_row_sum(game.get_field_with_figure())
+    row_dense_reward_sum = 0
+    for r in row_states:
+        row_dense_reward_sum += (r/game.width) * row_dens_w
+    reward += row_dense_reward_sum
+    reward += game.score * score_w
+    return reward
+
+
 def evaluate3(game, old_figure, model_result, wrong_move_flag=1):
     max_penalty = -0.1
     max_award = 2.0
@@ -77,6 +90,11 @@ def evaluate3(game, old_figure, model_result, wrong_move_flag=1):
 def get_col_sum(field):
     field[field > 0] = 1.0
     col_sum = np.sum(field,axis=0)
+    return col_sum
+
+def get_row_sum(field):
+    field[field > 0] = 1.0
+    col_sum = np.sum(field,axis=1)
     return col_sum
 
 def evaluate2(game, old_figure, model_result, wrong_move_flag=1):
