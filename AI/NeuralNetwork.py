@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import helpers
 #from helpers import *
 
 class Loss:
@@ -45,7 +46,13 @@ class Layer:
         self.act_fun = act_fun
         self.W = np.random.rand(neurons, input_size) - 0.5
         self.B = np.random.rand(neurons, 1) - 0.5
-        
+
+    def deepcopy(self, diffrence_rate):
+        new_layer = Layer(self.input_size, self.neurons, self.act_fun)
+        new_layer.W = helpers.randomize_matrix(self.W, diffrence_rate)
+        new_layer.B = helpers.randomize_matrix(self.B, diffrence_rate)
+        return new_layer
+
     def forward_prop(self, X):
         self.I = X
         self.Z = self.W.dot(X) + self.B
@@ -71,6 +78,17 @@ class Layer:
         x = np.nan_to_num(x, random.uniform(-0.1, 0.1))
         return x
 
+    def to_str(self):
+        result = ""
+        result += str(self.act_fun.__name__) + '\n'
+        result += str(self.W.shape[0]) + '\n'
+        result += str(self.W.shape[1]) + '\n'
+        result += helpers.numpy2str(self.W) + '\n'
+        result += str(self.B.shape[0]) + '\n'
+        result += str(self.B.shape[1]) + '\n'
+        result += helpers.numpy2str(self.B) + '\n'
+        return result
+
 class Model:
     def __init__(self):
         self.Layers = []
@@ -90,13 +108,6 @@ class Model:
     def get_accuracy(predictions, Y):
         return np.sum(predictions == Y) / Y.size
 
-    # def train(self, X, E, alpha):
-    #     self.predict_single(X)
-    #     m = E.size
-    #     for layer in reversed(self.Layers):
-    #         E, _ = layer.back_prop(E,m)
-    #     for layer in self.Layers:
-    #         layer.update_params(alpha)
 
     def train(self, X, Y, epochs, alpha):
         for i in range(0, epochs):
@@ -109,6 +120,57 @@ class Model:
                 layer.update_params(alpha)
         #print("loss, ", loss)
 
+    def summary(self):
+        id = 0 
+        for layer in self.Layers:
+            print("id: ", id)
+            print("layer.W: ", layer.W.shape, " head: ", round(layer.W[0][0],2), round(layer.W[2][2],2), round(layer.W[3][3],2), " tail: ", layer.W[-1][-1])
+            print("layer.B: ", layer.B.shape, " head: ", round(layer.B[0][0],2), round(layer.B[2][0],2), round(layer.B[3][0],2), " tail: ", layer.B[-1][-1])
+            print("layer A:", layer.act_fun)
+            print("---")
+            id += 1
+
+    def save(self, path):
+        text_file = open(path, "w")
+        text = ""
+        for layer in self.Layers:
+            text += layer.to_str()
+        text_file.write(text)
+        text_file.close()
+
+    def deepcopy(self, diffrence_rate):
+        M = Model()
+        for L in self.Layers:
+            M.add_layer(L.deepcopy(diffrence_rate))
+        return M
+
+    def load(self, path):
+        text_file = open(path, "r")
+        count = 0
+        while True:
+            count += 1
+            act_fun_label = text_file.readline()
+            if not act_fun_label:
+                break
+            if 'Sigmoid' in act_fun_label:
+                act_fun = Activations.Sigmoid
+            elif 'ReLu' in act_fun_label:
+                act_fun = Activations.ReLu
+            elif 'SoftMax' in act_fun_label:
+                act_fun = Activations.SoftMax
+            input_size = int(text_file.readline())
+            neurons = int(text_file.readline())
+            W = helpers.str2numpy(text_file.readline(), input_size, neurons)
+            bias_x = int(text_file.readline())
+            bias_y = int(text_file.readline())
+            B = helpers.str2numpy(text_file.readline(), bias_x, bias_y)
+            W = np.array(W)
+            B = np.array(B)
+            L = Layer(input_size, neurons, act_fun)
+            L.W = W
+            L.B = B
+            self.add_layer(L)
+        text_file.close()
 
 # data = pd.read_csv('C:\\Uczymy sie\\_Magisterka\\NeuralNetworks\\dataset\\train.csv')
 

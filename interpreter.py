@@ -44,8 +44,8 @@ def evaluate(game, old_figure, model_result, game_score, wrong_move_flag=1):
     return result, importance
 
 def end_state_grade(game):
-    row_dens_w = 0.2
-    score_w = 2.0
+    row_dens_w = 0.1
+    score_w = 10.0
     reward = 0.0
     row_states = get_row_sum(game.get_field_with_figure())
     row_dense_reward_sum = 0
