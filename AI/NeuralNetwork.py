@@ -69,8 +69,8 @@ class Layer:
     def update_params(self, alpha):
         self.W = self.W - alpha * self.dW
         self.B = self.B - alpha * np.array([self.dB]).T
-        #self.W = Layer.clean_nan(self.W)
-        #self.B = Layer.clean_nan(self.B)
+        self.W = Layer.clean_nan(self.W)
+        self.B = Layer.clean_nan(self.B)
 
     def clean_nan(x):
         x[x== np.inf] = np.nan

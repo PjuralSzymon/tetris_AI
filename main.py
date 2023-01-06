@@ -67,7 +67,8 @@ def start_game(pipe_conn, size, fps, n_gameplays, model_score = 0, epoch = 0, mo
         # grade made changes
         #print("action: "+ str(action))
         grade, importance = interpreter.evaluate(game, figure_save, np.round(model_result,2), game.score, correct_move_flag)
-        model_RL.grade(game.field, grade, importance)
+        if importance > 0:
+            model_RL.grade(game.field, grade, importance)
         #print("model_result: "+ str(model_result) + " grade: "+ str(grade))
         #input(" ? ")
         if hidden_mode == False:
@@ -130,14 +131,16 @@ if __name__ == '__main__':
     size = (400, 500)
     epochs = 1000
     gameplays = 30
-    generation_size = 10
+    generation_size = 16
     processes = []
     pipe_connections = []
-    best_model = AI.Model_RL.load("model.AI")
+    name = "model_3.AI"
+    best_model = AI.Model_RL(GAME_WIDTH * GAME_HIGHT, 4)
     best_score = 0
     model_id = 0    
     #best_model.summary()
     for e in range(0, epochs):
+        results_in_epoch = []
         if best_model != None:
             conn1, conn2 = Pipe()
             pipe_connections.append(conn1)
@@ -146,8 +149,7 @@ if __name__ == '__main__':
         for i in range(0, generation_size):
             conn1, conn2 = Pipe()
             pipe_connections.append(conn1)
-            print(" difrete: ", min(i/generation_size, 1.0))
-            new_model = best_model.deepcopy(min(i/generation_size, 1.0))
+            new_model = best_model.deepcopy(min(i/(generation_size*2), 0.8))
             processes.append(Process(target=start_game, args=(conn2, size, fps, gameplays, best_score, e, model_id, new_model, True)))
         for i in range(0, generation_size):
             processes[i].start()
@@ -155,6 +157,7 @@ if __name__ == '__main__':
             value = pipe_connections[i].recv()
             model = value[0]
             score = value[1]
+            results_in_epoch.append(score)
             if score > best_score:
                 model_id += 1
                 best_score = score
@@ -163,6 +166,6 @@ if __name__ == '__main__':
             processes[i].join()
         processes.clear()
         pipe_connections.clear()
-        print("epoch: ", e, " best_score: ", best_score)
-        best_model.save("model.AI")
-    best_model.save("model.AI")
+        print("epoch: ", e, " best_score: ", best_score, " score in epoch: ", np.round(results_in_epoch, 2))
+        best_model.save(name)
+    best_model.save(name)
