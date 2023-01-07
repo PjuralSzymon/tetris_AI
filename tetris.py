@@ -119,6 +119,9 @@ class Tetris:
         if self.intersects():
             self.state = "gameover"
 
+    def get_field_no_figure(self):
+        return np.array(copy.deepcopy(self.field))
+
     def get_field_with_figure(self):
         field_copy = copy.deepcopy(self.field)
         for i in range(4):
