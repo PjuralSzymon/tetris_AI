@@ -1,5 +1,24 @@
 import numpy as np
 import random
+import config as cf
+
+def create_model_input(field, extra_dim):
+    input = np.array(field).flatten()
+    if extra_dim:
+        return input.reshape((cf.GAME_WIDTH * cf.GAME_HIGHT, 1))
+    return input.reshape((cf.GAME_WIDTH * cf.GAME_HIGHT))
+
+def binary_list(input_list, high_val, low_val):
+    output_list = []
+    for sublist in input_list:
+        new_sublist = []
+        for value in sublist:
+            if value > 0:
+                new_sublist.append(high_val)
+            else:
+                new_sublist.append(low_val)
+        output_list.append(new_sublist)
+    return output_list
 
 def numpy2str(M):
     x = M.shape[0]

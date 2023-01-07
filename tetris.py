@@ -1,6 +1,8 @@
 import random
 import copy
 import numpy as np
+import helpers
+import config as cf
 
 "kod do tetrisa z https://levelup.gitconnected.com/writing-tetris-in-python-2a16bddb5318"
 
@@ -96,6 +98,8 @@ class Tetris:
                     for j in range(self.width):
                         self.field[i1][j] = self.field[i1 - 1][j]
         self.score += lines ** 2
+        return lines
+        
 
     def go_space(self):
         while not self.intersects():
@@ -107,24 +111,27 @@ class Tetris:
         self.figure.y += 1
         if self.intersects():
             self.figure.y -= 1
-            self.freeze()
+            return self.freeze(), 1
+        return 0, 0
 
     def freeze(self):
         for i in range(4):
             for j in range(4):
                 if i * 4 + j in self.figure.image():
                     self.field[i + self.figure.y][j + self.figure.x] = self.figure.color
-        self.break_lines()
+        score_delta = self.break_lines()
         self.new_figure()
         if self.intersects():
             self.state = "gameover"
+        return score_delta
 
     def get_field_with_figure(self):
-        field_copy = copy.deepcopy(self.field)
+        #field_copy = copy.deepcopy(self.field)
+        field_copy = helpers.binary_list(self.field, cf.CELL_NORM_VAL, 0.0)
         for i in range(4):
             for j in range(4):
                 if i * 4 + j in self.figure.image():
-                    field_copy[i + self.figure.y][j + self.figure.x] = self.figure.color
+                    field_copy[i + self.figure.y][j + self.figure.x] = cf.CELL_FIGURE_VAL#self.figure.color
         return np.array(field_copy)
 
     def go_side(self, dx):

@@ -118,7 +118,11 @@ class Model:
                 E = layer.back_prop(E)
             for layer in self.Layers:
                 layer.update_params(alpha)
-        #print("loss, ", loss)
+        #print("A: ", Model.get_predictions(A))
+        #print("Y: ", Model.get_predictions(Y))
+        acc = Model.get_accuracy(Model.get_predictions(A), Model.get_predictions(Y))
+        #print("ACC: ", acc)
+        return acc#Model.get_accuracy(Model.get_predictions(A), Model.get_predictions(Y))
 
     def summary(self):
         id = 0 
