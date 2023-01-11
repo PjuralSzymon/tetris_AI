@@ -4,12 +4,12 @@ import AI.NeuralNetwork as NN
 
 class Model_RL:
     def __init__(self, politic_size, actions, empty_mode = False):
-        hidden_layer_size = int((politic_size + actions)/2)
+        hidden_layer_size = (politic_size + actions)
         self.politic_size = politic_size
         self.actions = actions
+        self.last_game_score = 0
         self.M = NN.Model()
         if empty_mode: return
-        self.M.add_layer(NN.Layer(politic_size, politic_size, NN.Activations.Sigmoid))
         self.M.add_layer(NN.Layer(politic_size, hidden_layer_size, NN.Activations.Sigmoid))
         self.M.add_layer(NN.Layer(hidden_layer_size, hidden_layer_size, NN.Activations.Sigmoid))
         self.M.add_layer(NN.Layer(hidden_layer_size, hidden_layer_size, NN.Activations.Sigmoid))
@@ -45,7 +45,7 @@ class Model_RL:
     def load(path):
         model = Model_RL(1,1, True)
         model.M.load(path)
-        model.politic_size = model.M.Layers[0].W.shape[0]
+        model.politic_size = model.M.Layers[0].W.shape[1]
         model.actions = model.M.Layers[-1].W.shape[0]
         return model
 

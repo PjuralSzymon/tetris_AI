@@ -12,8 +12,9 @@ import pygame
 import config as cf
 
 
-
-def start_game(pipe_conn, size, fps, n_gameplays, model_score = 0, epoch = 0, model_id = 0, _model_RL = None, hidden_mode = True, fast_mode = True):
+#conn2, size, fps, gameplays, new_model, e, model_id, new_model, True
+def start_game(pipe_conn, size, fps, n_gameplays, epoch = 0, model_id = 0, _model_RL = None, hidden_mode = True, fast_mode = True):
+    model_score = 0
     if hidden_mode == False:
         pygame.init()
         screen = pygame.display.set_mode(size)
@@ -107,6 +108,7 @@ def start_game(pipe_conn, size, fps, n_gameplays, model_score = 0, epoch = 0, mo
         if hidden_mode == False: pygame.display.flip()
         if fast_mode == False and hidden_mode == False: clock.tick(fps)
     if hidden_mode == False: pygame.quit()
+    model_RL.last_game_score = model_score
     pipe_conn.send([model_RL, model_score])
     return 1
 
@@ -123,30 +125,30 @@ def start_game(pipe_conn, size, fps, n_gameplays, model_score = 0, epoch = 0, mo
 if __name__ == '__main__':
     fps = 2
     size = (400, 500)
-    epochs = 1000
-    gameplays = 30
-    generation_size = 14
+    epochs = 10
+    gameplays = 100
+    generation_size = 12
     processes = []
     pipe_connections = []
     name = "model_3.AI"
-    global_best_model = AI.Model_RL(cf.GAME_WIDTH * cf.GAME_HIGHT, 4)
-    local_best_model = AI.Model_RL(cf.GAME_WIDTH * cf.GAME_HIGHT, 4)
-    global_best_score = 0
+    best_models = []
+    for i in range(0, int(generation_size * 0.6)):
+        best_models.append(AI.Model_RL.load("model_base.AI"))
     model_id = 0    
-    #best_model.summary()
     for e in range(0, epochs):
         results_in_epoch = []
-        # always add global best model
         conn1, conn2 = Pipe()
         pipe_connections.append(conn1)
-        best_model_process = Process(target=start_game, args=(conn2, size, fps, gameplays, global_best_model, e, model_id, global_best_model, False))
+        best_model_process = Process(target=start_game, args=(conn2, size, fps, gameplays, e, model_id, best_models[0], False))
         processes.append(best_model_process)
         for i in range(0, generation_size):
-            # reproduce new best model based on best model from last epoch
             conn1, conn2 = Pipe()
             pipe_connections.append(conn1)
-            new_model = local_best_model.deepcopy(min(i/(generation_size*2), 0.1))
-            processes.append(Process(target=start_game, args=(conn2, size, fps, gameplays, local_best_model, e, model_id, new_model, True)))
+            if i < len(best_models):
+                new_model = new_model = best_models[i].deepcopy(0.0)
+            else:
+                new_model = AI.Model_RL(cf.GAME_WIDTH * cf.GAME_HIGHT, 4)
+            processes.append(Process(target=start_game, args=(conn2, size, fps, gameplays, e, model_id, new_model, True)))
         for i in range(0, generation_size):
             processes[i].start()
         # find local best model ( best model from last epoch )
@@ -156,18 +158,13 @@ if __name__ == '__main__':
             model = value[0]
             score = value[1]
             results_in_epoch.append(score)
-            if score > local_best_score:
-                model_id += 1
-                local_best_score = score
-                local_best_model = model
-        # if model from last epoch (local) is better than global replace
-        if local_best_score > global_best_score:
-            global_best_score = local_best_score
-            global_best_model = local_best_model
+            best_models.append(model)
         for i in range(0, generation_size):
             processes[i].join()
+        best_models.sort(key=lambda x: x.last_game_score, reverse = True)
+        best_models = best_models[0:int(generation_size * 0.6)]
         processes.clear()
         pipe_connections.clear()
-        print("epoch: ", e, " global_best_score: ", global_best_score, " local_best_score: ", local_best_score, " score in epoch: ", np.round(results_in_epoch, 2))
-        global_best_model.save(name)
-    global_best_model.save(name)
+        print("epoch: ", e, " best_models: ", [x.last_game_score for x in best_models], " score in epoch: ", results_in_epoch)
+        best_models[0].save(name)
+    best_models[0].save(name)

@@ -3,13 +3,15 @@ import numpy as np
 import scipy.stats as ss
 import config as cf
 
+#
+#   Funkcja evaluate zwraca result, importance
+#   result czyli co POWINIEN zwrócić model dla danego wejścia
+#   importance czyli jak ważne jest to żeby model się tego nauczył
+#
 def evaluate(game, old_figure, model_result, game_score, wrong_move_flag=1):
-    noise = 0.4
-    #max_penalty = -1.0
-    #max_award = 1.0
     importance = 0
     action = np.argmax(model_result)
-    result = np.random.uniform(low=0, high=noise, size=model_result.shape)
+    result = np.random.uniform(low=0, high=cf.NOISE, size=model_result.shape)
     max_height_prev = np.max(get_col_sum(old_figure))
     max_height_current = np.max(get_col_sum(game.get_field_with_figure()))
     if max_height_prev == max_height_current:
@@ -31,11 +33,6 @@ def evaluate(game, old_figure, model_result, game_score, wrong_move_flag=1):
         importance += 1
         #print("max h is better")
     peaks = get_highest_peaks(old_figure)
-    # print("old_figure: ")
-    # print(old_figure)
-    # print("peaks: ")
-    # print(peaks)
-    # print("-----")
     # if mean height cahnged
     mean_height_prev = np.mean(get_col_sum(old_figure))
     mean_height_current = np.mean(get_col_sum(game.get_field_with_figure()))
