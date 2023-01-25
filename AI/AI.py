@@ -1,16 +1,19 @@
 import numpy as np
 import AI.NeuralNetwork as NN
-
+import copy
 
 class Model_RL:
-    def __init__(self, politic_size, actions, empty_mode = False):
+    def __init__(self, politic_size, actions, empty_mode = False, id = 0):
         hidden_layer_size = (politic_size + actions)
+        self.id = id
         self.politic_size = politic_size
         self.actions = actions
-        self.last_game_score = 0
+        self.last_game_score = -1
         self.M = NN.Model()
+        self.punishment_hist = []
+        self.importance_hist = []
         if empty_mode: return
-        self.M.add_layer(NN.Layer(politic_size, hidden_layer_size, NN.Activations.Sigmoid))
+        self.M.add_layer(NN.Layer(self.politic_size, hidden_layer_size, NN.Activations.Sigmoid))
         self.M.add_layer(NN.Layer(hidden_layer_size, hidden_layer_size, NN.Activations.Sigmoid))
         self.M.add_layer(NN.Layer(hidden_layer_size, hidden_layer_size, NN.Activations.Sigmoid))
         self.M.add_layer(NN.Layer(hidden_layer_size, hidden_layer_size, NN.Activations.Sigmoid))
@@ -22,7 +25,9 @@ class Model_RL:
         self.M.summary()
 
     def create_input(self, politics):
-        input = np.array(politics).flatten()
+        #input = np.array(politics[0]).flatten()
+        #figure_info = np.array(politics[1:4])
+        input = np.concatenate((politics[0].flatten(), np.array(politics[1:4])))
         input = input.reshape((self.politic_size, 1))
         for i in range(0, len(input)):
             if input[i] > 0:
@@ -35,9 +40,12 @@ class Model_RL:
         model_result = model_result.transpose()
         return model_result, np.argmax(model_result)
 
-    def grade(self, politics, grade, importance = 1):
+    def grade(self, politics, grade, importance = 1, learning_rate = 0.1):
         input = self.create_input(politics)
-        self.M.train(input, grade.transpose(), importance, 0.1)
+        #print("training: ", int(importance))
+        loss_sum = self.M.train(input, grade.transpose(), 1 + int(importance), learning_rate)
+        #print("loss_sum: ", loss_sum)
+        self.punishment_hist.append(loss_sum)
 
     def save(self, path):
         self.M.save(path)
@@ -52,4 +60,7 @@ class Model_RL:
     def deepcopy(self, diffrence_rate):
         model = Model_RL(self.politic_size, self.actions, True)
         model.M = self.M.deepcopy(diffrence_rate)
+        model.last_game_score = 0
+        #model.punishment_hist = copy.deepcopy(self.punishment_hist)
+        #model.importance_hist = copy.deepcopy(self.importance_hist)
         return model

@@ -110,15 +110,16 @@ class Model:
 
 
     def train(self, X, Y, epochs, alpha):
+        loss = 0
         for i in range(0, epochs):
             A = self.predict_single(X)
             E = Loss.MAE.der(Y, A)
-            loss = Loss.MAE.exe(Y, A)
+            loss += np.sum(Loss.MAE.exe(Y, A))
             for layer in reversed(self.Layers):
                 E = layer.back_prop(E)
             for layer in self.Layers:
                 layer.update_params(alpha)
-        #print("loss, ", loss)
+        return loss
 
     def summary(self):
         id = 0 
