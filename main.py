@@ -19,9 +19,7 @@ import helpers
 import warnings
 warnings.filterwarnings('ignore')
 
-#conn2, size, fps, gameplays, new_model, e, model_id, new_model, True
 def start_game(pipe_conn, n_gameplays, cf, epoch = 0, model_id = 0, _model_RL = None, hidden_mode = True, fast_mode = True):
-    #print(os.getpid(), " config.noise: ", cf.NOISE, " modelid: ", _model_RL.id)
     model_score = 0
     if hidden_mode == False:
         pygame.init()
@@ -38,7 +36,6 @@ def start_game(pipe_conn, n_gameplays, cf, epoch = 0, model_id = 0, _model_RL = 
     model_score = 0.0
     importance_hist = []
     
-    #punishment_hist = []
     while n_gameplays > 0:
         if game.figure is None:
             game.new_figure()
@@ -55,8 +52,6 @@ def start_game(pipe_conn, n_gameplays, cf, epoch = 0, model_id = 0, _model_RL = 
             if game.state == "start":
                 game.go_down()
 
-        # Make decision by model:
-        #figure_save_no_fig = game.get_field_no_figure()
         figure_save = game.get_field_with_figure()
         politics = [figure_save, game.figure.x + 1, game.figure.y, game.figure.type]
         model_result, action = model_RL.move(politics)
@@ -71,16 +66,10 @@ def start_game(pipe_conn, n_gameplays, cf, epoch = 0, model_id = 0, _model_RL = 
         else:
             correct_move_flag = game.go_down()
         
-        # grade made changes
-        #print("action: "+ str(action))
         grade, importance = interpreter.evaluate(game, figure_save, np.round(model_result,2), game.score, cf, correct_move_flag)
         importance_hist.append(importance)
         if importance > cf.IMPORTANCE_THRESH:
             model_RL.grade(politics, grade, importance, cf.learning_rate)
-        #punishment = sum(sum(model_result - grade))
-        #model_RL.punishment_hist.append(punishment)
-        #print("model_result: "+ str(model_result) + " grade: "+ str(grade)+ " punishment: " + str(punishment))
-        #input(" ? ")
         if hidden_mode == False:
             screen.fill(cf.WHITE)
             
@@ -108,18 +97,12 @@ def start_game(pipe_conn, n_gameplays, cf, epoch = 0, model_id = 0, _model_RL = 
             text3 = font.render("Epoch: " + str(epoch), True, cf.BLACK)
             text4 = font.render("Model id: " + str(model_id), True, cf.BLACK) 
             text5 = font.render("Model score: " + str(round(model_score,2)), True, cf.BLACK) 
-            text6 = font.render("importance: " + str(importance), True, cf.BLACK) 
-            text7 = font.render("figurepos: " + str(game.figure.x) + ","+ str(game.figure.y), True, cf.BLACK) 
-
             text_game_over = font1.render("Game Over", True, (255, 125, 0))
             screen.blit(text1, [0, 0])
             screen.blit(text2, [0, 15])
             screen.blit(text3, [0, 30])
             screen.blit(text4, [0, 45])
             screen.blit(text5, [0, 60])
-            screen.blit(text6, [0, 75])
-            screen.blit(text7, [0, 90])
-
         if game.state == "gameover":
             if hidden_mode == False:
                 screen.blit(text_game_over, [20, 200])
@@ -142,52 +125,32 @@ def save_graphs(punishment_hist, importance_hist, noise_hist, best_model_score_h
     helpers.draw_norm_graph(best_model_score_hist, "best_model_score_hist", path, True)
     helpers.save_txt(path, description)
 
-# start = time.time()
-# start_game(size, fps, 3,  _model_RL = None, fast_mode = True, hidden_mode = False)
-# end = time.time()
-# print("hidden_mode = False", end - start)
-# start = time.time()
-# start_game(size, fps, 3,  _model_RL = None, fast_mode = True, hidden_mode = True)
-# end = time.time()
-# print("hidden_mode = True", end - start)
-
 if __name__ == '__main__':
     fps = 2
     size = (400, 500)
     epochs = 500
     gameplays = 100
-    generation_size = 13
+    generation_size = 12
     processes = []
     pipe_connections = []
-    model_name_save = "model_26"
+    model_name_save = "model_33"
     best_models = []
     noise_start_val = cf.NOISE
     noise_hist = []
     path = "./results/"+model_name_save
-    description = "Ten model to proba odapalenia najlepszych konfiguracji znalezionych dla losowych modeli, przy uzyciu losowego startu, 100 rozgrywek i 14 agentow,\n\
-    to samo co model_13 ale szum opiera sie na find best move i wyrzucilem z evaluate srednia a std jest dzielone na pol\n\
-    model dodatkowo dostaje pozycje figury i jej typ przez co jest nie kompatybilny z innymi mdoelami\n\
-    best_move na szumie nei jest liczony z polowy tylko z pozycji figury\n\
-    Funkcje aktywacyjne są spowrotem sigmoid zostawiam ten model na 100 epok\n\
-    Brak best move\n\
-    punishment jest stosowane wdlug kary punishment a nie na pojedynczych indeksah\n\
-    zmienilem tak ze kara i angroda ejst dodawana tylko jesli nastapila zmiana jesli nie to nic sie nie dzieje\n\
-    Z powrotem dodalem ocene przez col distrybution \n\
-    Sa to najlepsze ustawienia z init_experiment_2 \n\
-    "
+    description = "W tym miejscu można wpisać przykłądy opis modelu \n\
+                   Może to pomóc w późniejszej identyfikacji eksperymentu"
     if os.path.exists(path):
         print("Model with this name already exists")
         exit()
     os.mkdir(path, 0o666)
     for i in range(0, math.ceil(generation_size * 0.6)):
         best_models.append(AI.Model_RL(cf.GAME_WIDTH * cf.GAME_HIGHT + 3, 4))
-        #best_models.append(AI.Model_RL.load("results\model_base.AI"))
     model_id = 0    
     punishment_hist = []
     importance_hist = []
     best_model_score_hist = []
-    #   (pipe_conn, n_gameplays, cf, epoch = 0, model_id = 0, _model_RL = None, hidden_mode = True, fast_mode = True):
-    #   processes.append(Process(target=main.start_game, args=(conn2, gameplays, config.get_config_object(), 1, 1, random_model, True)))
+   
     for e in range(0, epochs):
         results_in_epoch = []
         conn1, conn2 = Pipe()
@@ -204,7 +167,6 @@ if __name__ == '__main__':
             processes.append(Process(target=start_game, args=(conn2, gameplays, cf.get_config_object(), e, model_id, new_model, True)))
         for i in range(0, generation_size):
             processes[i].start()
-        # find local best model ( best model from last epoch )
         local_best_score = -1
         for i in range(0, generation_size):
             value = pipe_connections[i].recv()
@@ -219,21 +181,13 @@ if __name__ == '__main__':
         processes.clear()
         pipe_connections.clear()
         print("epoch: ", e, " best_models: ", [x.last_game_score for x in best_models], " score in epoch: ", results_in_epoch)
-        #best_models[0].save(path+"/model.AI")
-        #update noise level
         noise_hist.append(cf.NOISE)
         cf.NOISE = noise_start_val * (cf.NOISE_END_VAL/noise_start_val) ** (e / epochs)
         best_model_score_hist.append(best_models[0].last_game_score)
         punishment_hist += best_models[0].punishment_hist
         importance_hist += best_models[0].importance_hist
         save_graphs(punishment_hist, importance_hist, noise_hist, best_model_score_hist, path, description)
+        best_models[0].save(path+"/model.AI")
     best_models[0].save(path+"/model.AI")
-    # draw_punishment_graph(best_models[0])
-    # print("punishment_hist: ", type(punishment_hist))
-    # print("punishment_hist: ", len(punishment_hist))
-    # print("punishment_hist: ", punishment_hist)
-    # print("importance_hist: ", type(importance_hist))
-    # print("importance_hist: ", len(importance_hist))
-    # print("importance_hist: ", importance_hist)
     save_graphs(punishment_hist, importance_hist, noise_hist, best_model_score_hist, path, description)
     print("DONE")

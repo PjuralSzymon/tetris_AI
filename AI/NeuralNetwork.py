@@ -1,7 +1,6 @@
 import numpy as np
 import random
 import helpers
-#from helpers import *
 
 class Loss:
     class MSE:
@@ -37,8 +36,6 @@ class Activations:
         def der(X):
             return 1
             
-
-
 class Layer:
     def __init__(self,input_size, neurons, act_fun):
         self.input_size = input_size
@@ -172,28 +169,3 @@ class Model:
             L.B = B
             self.add_layer(L)
         text_file.close()
-
-# data = pd.read_csv('C:\\Uczymy sie\\_Magisterka\\NeuralNetworks\\dataset\\train.csv')
-
-# data = np.array(data)
-# m,n = data.shape
-# np.random.shuffle(data)
-
-# data_test = data[0:1000].T
-# Y_test = data_test[0]
-# X_test = data_test[1:n]
-# X_test = X_test / 255.0
-
-# data_train = data[1000:m].T
-# Y_train = data_train[0]
-# X_train = data_train[1:n]
-# X_train = X_train / 255.0
-
-# M = Model()
-# M.add_layer(Layer(784,10,Activations.ReLu))
-# M.add_layer(Layer(10,10,Activations.ReLu))
-# M.add_layer(Layer(10,10,Activations.SoftMax))
-# M.gradient_descent(X_train, Y_train, 10, 0.1)
-
-# predicted = M.predict_single(X_train[:, 2,None])
-# print(predicted)

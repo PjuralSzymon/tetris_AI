@@ -25,8 +25,6 @@ class Model_RL:
         self.M.summary()
 
     def create_input(self, politics):
-        #input = np.array(politics[0]).flatten()
-        #figure_info = np.array(politics[1:4])
         input = np.concatenate((politics[0].flatten(), np.array(politics[1:4])))
         input = input.reshape((self.politic_size, 1))
         for i in range(0, len(input)):
@@ -42,9 +40,7 @@ class Model_RL:
 
     def grade(self, politics, grade, importance = 1, learning_rate = 0.1):
         input = self.create_input(politics)
-        #print("training: ", int(importance))
         loss_sum = self.M.train(input, grade.transpose(), 1 + int(importance), learning_rate)
-        #print("loss_sum: ", loss_sum)
         self.punishment_hist.append(loss_sum)
 
     def save(self, path):
@@ -61,6 +57,4 @@ class Model_RL:
         model = Model_RL(self.politic_size, self.actions, True)
         model.M = self.M.deepcopy(diffrence_rate)
         model.last_game_score = 0
-        #model.punishment_hist = copy.deepcopy(self.punishment_hist)
-        #model.importance_hist = copy.deepcopy(self.importance_hist)
         return model

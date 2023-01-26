@@ -30,7 +30,6 @@ def randomize_matrix(M, diffrence_rate):
     y = M.shape[1]
     _min = np.min(M)
     _max = np.max(M)
-    #print(_min, _max)
     if diffrence_rate < 0 or diffrence_rate > 1.0: print("diffrence_rate should belong to (0,1)")
     result = np.copy(M)
     for i in range(0,x):
@@ -38,22 +37,6 @@ def randomize_matrix(M, diffrence_rate):
             diff =  ((1- diffrence_rate) * M[i][j] + diffrence_rate * random.uniform(_min, _max))/2
             result[i][j] = diff
     return result
-
-
-# def draw_punishment_graph(model_rl):
-#     draw_smooth_graph(model_rl.punishment_hist, "Punishment hist", "smooth PH")
-    # x_smooth = np.linspace(0, len(model_rl.punishment_hist), 50)
-    # spl = make_interp_spline(range(len(model_rl.punishment_hist)),model_rl.punishment_hist,  k=3)
-    # y_smooth = spl(x_smooth)
-    
-    # plt.plot(model_rl.punishment_hist, color='gray', linestyle='--', label='punishment history for best model')
-    # plt.plot(x_smooth, y_smooth, '-', color='blue', label='Gładkie przybliżenie')
-    # plt.xlabel('epochs')
-    # plt.ylabel('punishment_hist')
-    # plt.title('Wykres kary')
-    # plt.legend()
-    # plt.show()
-
 
 def save_txt(path, decription):
     with open(path+'/decription.txt', 'w') as f:

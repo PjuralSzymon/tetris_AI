@@ -18,12 +18,9 @@ importance_height_dist_mean = 0.2876
 learning_rate = 0.19881703
 punishment = 0.5263
 
-#P4_195 wybralem te konfiguracje
-
-
 class cf:
     # ta klasa jest potrzebna poniewaz algorytmy korzystaja z wieowatkowosci wiec zeby wysylac im dane
-    # nie tracąc mozliwosci edycji pliku config tworzona jest kopia przesylana do procesowj ako obiekt
+    # nie tracąc mozliwosci edycji pliku config tworzona jest kopia przesylana do procesowj jako obiekt
     def __init__(self):
         self.fps = fps
         self.size = size
